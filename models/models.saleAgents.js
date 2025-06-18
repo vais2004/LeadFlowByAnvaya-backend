@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const salesAgentSchema = new mongoose.Schema({
   name: {
@@ -7,15 +7,15 @@ const salesAgentSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: true, 
-    unique: true, 
+    required: true,
+    unique: true,
   },
   createdAt: {
     type: Date,
     default: Date.now,
-  }
+  },
 });
 
-const SalesAgent = mongoose.model('SalesAgent', salesAgentSchema);
+const SalesAgent = mongoose.model("SalesAgent", salesAgentSchema);
 
-module.exports = { SalesAgent }
+module.exports = { SalesAgent };
