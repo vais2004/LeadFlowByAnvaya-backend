@@ -9,7 +9,7 @@ const initializeDatabase=async()=>{
         .then(()=>{
             console.log('Connected to Database')
         })
-        .catch((error)=>console.log('Error connecting to database', error))
+        .catch((error)=>console.error('Error connecting to database', error))
 
 }
 
