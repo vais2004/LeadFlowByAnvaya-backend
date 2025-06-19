@@ -18,4 +18,4 @@ const salesAgentSchema = new mongoose.Schema({
 
 const SalesAgent = mongoose.model("SalesAgent", salesAgentSchema);
 
-module.exports = { SalesAgent };
+module.exports = SalesAgent;
