@@ -43,23 +43,15 @@ app.post("/agents", async (req, res) => {
 });
 
 //for get agents details
-// app.get("/agents", async (req, res) => {
-//   try {
-//     const agents = await SalesAgent.find();
-//     res.status(200).json(agents);
-//   } catch (error) {
-//     res.status(500).json({ error: "failed to fetch agents" });
-//   }
-// });
 app.get("/agents", async (req, res) => {
   try {
     const agents = await SalesAgent.find();
     res.status(200).json(agents);
   } catch (error) {
-    console.error("GET /agents error:", error); // full error log
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "failed to fetch agents" });
   }
 });
+
 
 //for adding comments by id
 app.post("/leads/:id/comments", async (req, res) => {
@@ -140,18 +132,10 @@ app.get("/leads", async (req, res) => {
     const leads = await Lead.find().populate("salesAgent", "name");
     res.status(200).json(leads);
   } catch (error) {
-    console.error("GET /leads error:", error); // full error log
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Error getting leads." });
   }
 });
-// app.get("/leads", async (req, res) => {
-//   try {
-//     const leads = await Lead.find().populate("salesAgent", "name");
-//     res.status(200).json(leads);
-//   } catch (error) {
-//     res.status(500).json({ error: "Error getting leads." });
-//   }
-// });
+
 
 //for update lead by id
 app.put("/leads/:id", async (req, res) => {
