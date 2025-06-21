@@ -52,7 +52,6 @@ app.get("/agents", async (req, res) => {
   }
 });
 
-
 //for adding comments by id
 app.post("/leads/:id/comments", async (req, res) => {
   try {
@@ -136,22 +135,27 @@ app.get("/leads", async (req, res) => {
   }
 });
 
-
 //for update lead by id
 app.put("/leads/:id", async (req, res) => {
   try {
     const leadId = req.params.id;
     const updates = req.body;
 
-    const updatedLead = await Lead.findByIdAndUpdate(leadId, updates, {
-      now: true,
-    }).populate("salesAgent", "name");
+    const lead = await Lead.findById(leadId).populate("salesAgent", "name");
 
-    if (!updatedLead) {
-      return res.status(404).json({ error: "Lead not found." });
+    if (!lead) {
+      return res.status(404).json({ error: "Lead not found" });
     }
 
-    res.status(200).json(updatedLead);
+    if (updates.status === "Closed" && lead.status !== "Closed") {
+      lead.closedAt = new Date();
+    }
+
+    Object.assign(lead, updates);
+
+    const savedLead = await lead.save();
+
+    res.status(200).json(savedLead);
   } catch {
     res.status(500).json({ error: "Error updating lead." });
   }
@@ -182,8 +186,8 @@ app.get("/report/pipeline", async (req, res) => {
     const closedLeads = allLeads.filter((lead) => lead.status === "Closed");
 
     res.status(200).json({
-      totalCloseLeads: closedLeads.length,          
-      totalLeadsInPipeline: activeLeads.length,    
+      totalCloseLeads: closedLeads.length,
+      totalLeadsInPipeline: activeLeads.length,
     });
   } catch (error) {
     res.status(500).json({
@@ -234,7 +238,6 @@ app.get("/report/last-week", async (req, res) => {
   }
 });
 
-
 //for get how many leads are in each status
 // GET how many leads are in each status
 app.get("/report/status-distribution", async (req, res) => {
@@ -265,7 +268,6 @@ app.get("/report/status-distribution", async (req, res) => {
     });
   }
 });
-
 
 const PORT = 5000;
 app.listen(PORT, () => {
