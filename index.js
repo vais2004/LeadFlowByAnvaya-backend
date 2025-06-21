@@ -181,7 +181,7 @@ app.delete("/leads/:id", async (req, res) => {
 
 
 // GET: Leads closed in the last 7 days by sales agent
-router.get("/report/last-week", async (req, res) => {
+app.get("/report/last-week", async (req, res) => {
   try {
     // Get the current date and the date 7 days ago
     const now = new Date();
