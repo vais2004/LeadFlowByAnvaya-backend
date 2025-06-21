@@ -197,44 +197,47 @@ app.get("/report/pipeline", async (req, res) => {
 });
 
 // GET: Leads closed in the last 7 days by sales agent
-app.get("/report/last-week", async (req, res) => {
+router.get("/report/last-week", async (req, res) => {
   try {
+    // Get the current date and the date 7 days ago
     const now = new Date();
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(now.getDate() - 7);
 
-    const closedLeads = await Lead.find({ status: "Closed" }).populate(
-      "salesAgent",
-      "name"
-    );
+    // Get all leads that are marked as "Closed" and include sales agent name
+    const closedLeads = await Lead.find({ status: "Closed" }).populate("salesAgent", "name");
 
+    // Filter leads that were closed within the last 7 days
     const recentClosedLeads = closedLeads.filter((lead) => {
-      // Use closedAt if present, fallback to updatedAt
-      const closedTime = lead.closedAt || lead.updatedAt;
+      const closedTime = lead.closedAt || lead.updatedAt; // fallback to updatedAt
       return closedTime >= sevenDaysAgo && closedTime <= now;
     });
 
+    // Count the number of closed leads per sales agent
     const leadCountByAgent = {};
     recentClosedLeads.forEach((lead) => {
       const agentName = lead.salesAgent?.name;
       if (!agentName) return;
+
       if (!leadCountByAgent[agentName]) {
         leadCountByAgent[agentName] = 0;
       }
       leadCountByAgent[agentName]++;
     });
 
-    const barData = Object.entries(leadCountByAgent).map(([agent, count]) => ({
-      salesAgent: agent,
-      closedLeads: count,
-    }));
+    // Convert the result into an array for the bar chart
+    const barData = Object.entries(leadCountByAgent).map(([agentName, count]) => {
+      return {
+        salesAgent: agentName,
+        closedLeads: count,
+      };
+    });
 
+    // Send the result
     res.status(200).json(barData);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      error: "Something went wrong. Please try again later.",
-    });
+    console.error("Error fetching last week's closed leads:", error);
+    res.status(500).json({ error: "Something went wrong. Please try again later." });
   }
 });
 
