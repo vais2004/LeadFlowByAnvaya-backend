@@ -128,12 +128,28 @@ app.post("/leads", async (req, res) => {
 //for get leads
 app.get("/leads", async (req, res) => {
   try {
-    const leads = await Lead.find().populate("salesAgent", "name");
+    const { status, salesAgent, priority } = req.query;
+
+    // Build dynamic query
+    const query = {};
+    if (status) query.status = status;
+    if (salesAgent) query.salesAgent = salesAgent;
+    if (priority) query.priority = priority;
+
+    const leads = await Lead.find(query).populate("salesAgent", "name");
     res.status(200).json(leads);
   } catch (error) {
     res.status(500).json({ error: "Error getting leads." });
   }
 });
+// app.get("/leads", async (req, res) => {
+//   try {
+//     const leads = await Lead.find().populate("salesAgent", "name");
+//     res.status(200).json(leads);
+//   } catch (error) {
+//     res.status(500).json({ error: "Error getting leads." });
+//   }
+// });
 
 //for update lead by id
 app.put("/leads/:id", async (req, res) => {
