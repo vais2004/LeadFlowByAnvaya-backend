@@ -178,7 +178,7 @@ app.delete("/leads/:id", async (req, res) => {
   }
 });
 
-//get report of leads in the pipeline and closed leads
+// GET: Report of total pipeline vs closed leads
 app.get("/report/pipeline", async (req, res) => {
   try {
     const allLeads = await Lead.find();
@@ -196,8 +196,7 @@ app.get("/report/pipeline", async (req, res) => {
   }
 });
 
-//for get closed leads from 7 days ago by sales agent
-
+// GET: Leads closed in the last 7 days by sales agent
 app.get("/report/last-week", async (req, res) => {
   try {
     const now = new Date();
@@ -210,14 +209,15 @@ app.get("/report/last-week", async (req, res) => {
     );
 
     const recentClosedLeads = closedLeads.filter((lead) => {
-      return (
-        lead.closedAt && lead.closedAt >= sevenDaysAgo && lead.closedAt <= now
-      );
+      // Use closedAt if present, fallback to updatedAt
+      const closedTime = lead.closedAt || lead.updatedAt;
+      return closedTime >= sevenDaysAgo && closedTime <= now;
     });
 
     const leadCountByAgent = {};
     recentClosedLeads.forEach((lead) => {
       const agentName = lead.salesAgent?.name;
+      if (!agentName) return;
       if (!leadCountByAgent[agentName]) {
         leadCountByAgent[agentName] = 0;
       }
@@ -238,8 +238,7 @@ app.get("/report/last-week", async (req, res) => {
   }
 });
 
-//for get how many leads are in each status
-// GET how many leads are in each status
+// GET: Distribution of leads by status
 app.get("/report/status-distribution", async (req, res) => {
   try {
     const leads = await Lead.find({}, { status: 1 });
@@ -268,6 +267,98 @@ app.get("/report/status-distribution", async (req, res) => {
     });
   }
 });
+
+
+// //get report of leads in the pipeline and closed leads
+// app.get("/report/pipeline", async (req, res) => {
+//   try {
+//     const allLeads = await Lead.find();
+//     const activeLeads = allLeads.filter((lead) => lead.status !== "Closed");
+//     const closedLeads = allLeads.filter((lead) => lead.status === "Closed");
+
+//     res.status(200).json({
+//       totalCloseLeads: closedLeads.length,
+//       totalLeadsInPipeline: activeLeads.length,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       error: "Something went wrong. Please try again later.",
+//     });
+//   }
+// });
+
+// //for get closed leads from 7 days ago by sales agent
+
+// app.get("/report/last-week", async (req, res) => {
+//   try {
+//     const now = new Date();
+//     const sevenDaysAgo = new Date();
+//     sevenDaysAgo.setDate(now.getDate() - 7);
+
+//     const closedLeads = await Lead.find({ status: "Closed" }).populate(
+//       "salesAgent",
+//       "name"
+//     );
+
+//     const recentClosedLeads = closedLeads.filter((lead) => {
+//       return (
+//         lead.closedAt && lead.closedAt >= sevenDaysAgo && lead.closedAt <= now
+//       );
+//     });
+
+//     const leadCountByAgent = {};
+//     recentClosedLeads.forEach((lead) => {
+//       const agentName = lead.salesAgent?.name;
+//       if (!leadCountByAgent[agentName]) {
+//         leadCountByAgent[agentName] = 0;
+//       }
+//       leadCountByAgent[agentName]++;
+//     });
+
+//     const barData = Object.entries(leadCountByAgent).map(([agent, count]) => ({
+//       salesAgent: agent,
+//       closedLeads: count,
+//     }));
+
+//     res.status(200).json(barData);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({
+//       error: "Something went wrong. Please try again later.",
+//     });
+//   }
+// });
+
+// //for get how many leads are in each status
+// // GET how many leads are in each status
+// app.get("/report/status-distribution", async (req, res) => {
+//   try {
+//     const leads = await Lead.find({}, { status: 1 });
+
+//     const statusCount = {};
+
+//     leads.forEach((lead) => {
+//       const status = lead.status;
+//       if (statusCount[status]) {
+//         statusCount[status]++;
+//       } else {
+//         statusCount[status] = 1;
+//       }
+//     });
+
+//     const data = Object.entries(statusCount).map(([status, count]) => ({
+//       label: status,
+//       value: count,
+//     }));
+
+//     res.status(200).json(data);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({
+//       error: "Something went wrong. Please try again later.",
+//     });
+//   }
+// });
 
 const PORT = 5000;
 app.listen(PORT, () => {
