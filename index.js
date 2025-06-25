@@ -5,12 +5,12 @@ const app = express();
 
 const corsOptions = {
   origin: [
-    "http://localhost:3000",
-    "https://lead-flow-by-anvaya.vercel.app", // ✅ no slash here
+    "https://lead-flow-by-anvaya.vercel.app",
+    "http://localhost:3000"
   ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 };
 
 app.use(cors(corsOptions));
