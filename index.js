@@ -1,47 +1,15 @@
-// const express = require("express");
-// const cors = require("cors");
-
-// const app = express();
-
-// // const corsOptions = {
-// //   origin: ["https://lead-flow-by-anvaya.vercel.app", "http://localhost:3000"],
-// //   credentials: true,
-// //   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-// //   allowedHeaders: ["Content-Type", "Authorization"],
-// // };
-
-// // app.use(cors(corsOptions));
-// const corsOptions = {
-//   origin: "https://lead-flow-by-anvaya.vercel.app", // ✅ single allowed origin
-//   credentials: true,
-//   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-//   allowedHeaders: ["Content-Type", "Authorization"]
-// };
-
-// app.use(cors(corsOptions));
-
-// // ✅ Manually add headers to be safe on Vercel
-// app.use((req, res, next) => {
-//   res.header("Access-Control-Allow-Origin", "https://lead-flow-by-anvaya.vercel.app");
-//   res.header("Access-Control-Allow-Credentials", "true");
-//   next();
-// });
-
-// app.use(express.json());
-
 const express = require("express");
 const cors = require("cors");
 
 const app = express();
 
-// ✅ Allow local (dev) and Vercel (prod)
 const corsOptions = {
   origin: ["http://localhost:3000", "https://lead-flow-by-anvaya.vercel.app"],
   credentials: true,
 };
 
-app.use(cors(corsOptions)); // Enable CORS
-app.use(express.json()); 
+app.use(cors(corsOptions));
+app.use(express.json());
 
 const { initializeDatabase } = require("./db/db.connect");
 
@@ -75,13 +43,11 @@ app.post("/agents", async (req, res) => {
 
 //for get agents details
 app.get("/agents", async (req, res) => {
-  console.log("👉 GET /agents endpoint hit");
   try {
     const agents = await SalesAgent.find();
-    console.log("✅ Agents fetched successfully:", agents.length);
+
     res.status(200).json(agents);
   } catch (error) {
-    console.error("❌ Error in /agents:", error);
     res.status(500).json({ error: "failed to fetch agents" });
   }
 });
@@ -90,21 +56,22 @@ app.get("/agents", async (req, res) => {
 app.post("/leads/:id/comments", async (req, res) => {
   try {
     const leadId = req.params.id;
-    const commentText = req.body.commentText;
+    const { commentText, author } = req.body; // 👈 author is a string
 
     const lead = await Lead.findById(leadId);
-    const agent = await SalesAgent.findById(lead.salesAgent);
+    if (!lead) return res.status(404).json({ error: "Lead not found" });
 
     const comment = new Comment({
       lead: leadId,
-      author: agent._id,
-      commentText: commentText,
+      author, // 👈 plain string like "Vaishnavi" or "John Doe"
+      commentText,
     });
 
     const savedComment = await comment.save();
-    res.json(savedComment);
+    res.status(201).json(savedComment);
   } catch (error) {
-    res.json({ error: "Error adding comment" });
+    console.error("❌ Error adding comment:", error);
+    res.status(500).json({ error: "Error adding comment" });
   }
 });
 
@@ -112,11 +79,12 @@ app.post("/leads/:id/comments", async (req, res) => {
 app.get("/leads/:id/comments", async (req, res) => {
   try {
     const leadId = req.params.id;
-    const comments = await Comment.find({ lead: leadId }).populate("author");
 
-    res.json(comments);
+    const comments = await Comment.find({ lead: leadId }).sort({ createdAt: -1 });
+    res.status(200).json(comments);
   } catch (error) {
-    res.json({ error: "error getting comments" });
+    console.error("❌ Error getting comments:", error);
+    res.status(500).json({ error: "Error getting comments" });
   }
 });
 
@@ -161,23 +129,19 @@ app.post("/leads", async (req, res) => {
 
 //for get leads
 app.get("/leads", async (req, res) => {
-  console.log("👉 GET /leads endpoint hit");
   try {
-    const { status, salesAgent, priority } = req.query;
-    console.log("📩 Query params received:", { status, salesAgent, priority });
+    const { status, salesAgent, priority, source } = req.query;
 
-    // Build dynamic query
     const query = {};
     if (status) query.status = status;
     if (salesAgent) query.salesAgent = salesAgent;
     if (priority) query.priority = priority;
-    console.log("🔍 MongoDB query object:", query);
+    if (source) query.source = source;
 
     const leads = await Lead.find(query).populate("salesAgent", "name");
-    console.log("✅ Leads fetched:", leads.length);
+
     res.status(200).json(leads);
   } catch (error) {
-    console.error("❌ Error in /leads:", error);
     res.status(500).json({ error: "Error getting leads." });
   }
 });
