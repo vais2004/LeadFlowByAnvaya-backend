@@ -1,32 +1,26 @@
 const express = require("express");
+const cors = require("cors");
 
 const app = express();
 
-// const cors = require("cors");
-// const corsOptions = {
-//   origin: "*",
-//   credentials: true,
-//   optionsSuccessStatus: 200,
-// };
-
-// app.use(cors(corsOptions));
-
-const cors = require("cors");
-
 const corsOptions = {
-  origin: ["http://localhost:3000", "https://lead-flow-by-anvaya.vercel.app/"], 
+  origin: [
+    "http://localhost:3000",
+    "https://lead-flow-by-anvaya.vercel.app", // ✅ no slash here
+  ],
   credentials: true,
 };
 
 app.use(cors(corsOptions));
 
+
+app.use(express.json());
 const { initializeDatabase } = require("./db/db.connect");
+
 const Tag = require("./models/model.tags");
 const Comment = require("./models/models.comments");
 const Lead = require("./models/models.leads");
 const SalesAgent = require("./models/models.saleAgents");
-
-app.use(express.json());
 
 initializeDatabase();
 
