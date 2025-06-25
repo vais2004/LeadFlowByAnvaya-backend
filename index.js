@@ -9,10 +9,11 @@ const corsOptions = {
     "https://lead-flow-by-anvaya.vercel.app", // ✅ no slash here
   ],
   credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
 
 app.use(cors(corsOptions));
-
 
 app.use(express.json());
 const { initializeDatabase } = require("./db/db.connect");
@@ -197,8 +198,6 @@ app.delete("/leads/:id", async (req, res) => {
   }
 });
 
-
-
 //get report of leads in the pipeline and closed leads
 app.get("/report/pipeline", async (req, res) => {
   try {
@@ -207,8 +206,8 @@ app.get("/report/pipeline", async (req, res) => {
     const closedLeads = allLeads.filter((lead) => lead.status === "Closed");
 
     res.status(200).json({
-      totalCloseLeads: closedLeads.length,          
-      totalLeadsInPipeline: activeLeads.length,    
+      totalCloseLeads: closedLeads.length,
+      totalLeadsInPipeline: activeLeads.length,
     });
   } catch (error) {
     res
@@ -225,7 +224,10 @@ app.get("/report/last-week", async (req, res) => {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(now.getDate() - 7);
 
-    const closedLeads = await Lead.find({ status: "Closed" }).populate("salesAgent", "name");
+    const closedLeads = await Lead.find({ status: "Closed" }).populate(
+      "salesAgent",
+      "name"
+    );
 
     const recentClosedLeads = closedLeads.filter((lead) => {
       const closedTime = lead.closedAt || lead.updatedAt;
@@ -243,20 +245,23 @@ app.get("/report/last-week", async (req, res) => {
       leadCountByAgent[agentName]++;
     });
 
-    const barData = Object.entries(leadCountByAgent).map(([agentName, count]) => {
-      return {
-        salesAgent: agentName,
-        closedLeads: count,
-      };
-    });
+    const barData = Object.entries(leadCountByAgent).map(
+      ([agentName, count]) => {
+        return {
+          salesAgent: agentName,
+          closedLeads: count,
+        };
+      }
+    );
 
     res.status(200).json(barData);
   } catch (error) {
     console.error("Error fetching last week's closed leads:", error);
-    res.status(500).json({ error: "Something went wrong. Please try again later." });
+    res
+      .status(500)
+      .json({ error: "Something went wrong. Please try again later." });
   }
 });
-
 
 //for get how many leads are in each status
 app.get("/report/status-distribution", async (req, res) => {
