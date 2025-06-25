@@ -39,3 +39,8 @@ const salesAgentSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
+
+
+const SalesAgent = mongoose.model("SalesAgent", salesAgentSchema);
+
+module.exports = SalesAgent;

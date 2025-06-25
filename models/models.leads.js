@@ -96,3 +96,6 @@ const leadSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+const Lead = mongoose.model("Lead", leadSchema);
+module.exports =  Lead ;
