@@ -63,14 +63,13 @@ app.post("/leads/:id/comments", async (req, res) => {
 
     const comment = new Comment({
       lead: leadId,
-      author, // 👈 plain string like "Vaishnavi" or "John Doe"
+      author,
       commentText,
     });
 
     const savedComment = await comment.save();
     res.status(201).json(savedComment);
   } catch (error) {
-    console.error("❌ Error adding comment:", error);
     res.status(500).json({ error: "Error adding comment" });
   }
 });
@@ -80,10 +79,11 @@ app.get("/leads/:id/comments", async (req, res) => {
   try {
     const leadId = req.params.id;
 
-    const comments = await Comment.find({ lead: leadId }).sort({ createdAt: -1 });
+    const comments = await Comment.find({ lead: leadId }).sort({
+      createdAt: -1,
+    });
     res.status(200).json(comments);
   } catch (error) {
-    console.error("❌ Error getting comments:", error);
     res.status(500).json({ error: "Error getting comments" });
   }
 });
