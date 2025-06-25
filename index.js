@@ -3,14 +3,29 @@ const cors = require("cors");
 
 const app = express();
 
+// const corsOptions = {
+//   origin: ["https://lead-flow-by-anvaya.vercel.app", "http://localhost:3000"],
+//   credentials: true,
+//   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+//   allowedHeaders: ["Content-Type", "Authorization"],
+// };
+
+// app.use(cors(corsOptions));
 const corsOptions = {
-  origin: ["https://lead-flow-by-anvaya.vercel.app", "http://localhost:3000"],
+  origin: "https://lead-flow-by-anvaya.vercel.app", // ✅ single allowed origin
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 };
 
 app.use(cors(corsOptions));
+
+// ✅ Manually add headers to be safe on Vercel
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "https://lead-flow-by-anvaya.vercel.app");
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
 
 app.use(express.json());
 const { initializeDatabase } = require("./db/db.connect");
