@@ -1,33 +1,48 @@
+// const express = require("express");
+// const cors = require("cors");
+
+// const app = express();
+
+// // const corsOptions = {
+// //   origin: ["https://lead-flow-by-anvaya.vercel.app", "http://localhost:3000"],
+// //   credentials: true,
+// //   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+// //   allowedHeaders: ["Content-Type", "Authorization"],
+// // };
+
+// // app.use(cors(corsOptions));
+// const corsOptions = {
+//   origin: "https://lead-flow-by-anvaya.vercel.app", // ✅ single allowed origin
+//   credentials: true,
+//   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+//   allowedHeaders: ["Content-Type", "Authorization"]
+// };
+
+// app.use(cors(corsOptions));
+
+// // ✅ Manually add headers to be safe on Vercel
+// app.use((req, res, next) => {
+//   res.header("Access-Control-Allow-Origin", "https://lead-flow-by-anvaya.vercel.app");
+//   res.header("Access-Control-Allow-Credentials", "true");
+//   next();
+// });
+
+// app.use(express.json());
+
 const express = require("express");
 const cors = require("cors");
 
 const app = express();
 
-// const corsOptions = {
-//   origin: ["https://lead-flow-by-anvaya.vercel.app", "http://localhost:3000"],
-//   credentials: true,
-//   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-//   allowedHeaders: ["Content-Type", "Authorization"],
-// };
-
-// app.use(cors(corsOptions));
+// ✅ Allow local (dev) and Vercel (prod)
 const corsOptions = {
-  origin: "https://lead-flow-by-anvaya.vercel.app", // ✅ single allowed origin
+  origin: ["http://localhost:3000", "https://lead-flow-by-anvaya.vercel.app"],
   credentials: true,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
 };
 
-app.use(cors(corsOptions));
+app.use(cors(corsOptions)); // Enable CORS
+app.use(express.json()); 
 
-// ✅ Manually add headers to be safe on Vercel
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "https://lead-flow-by-anvaya.vercel.app");
-  res.header("Access-Control-Allow-Credentials", "true");
-  next();
-});
-
-app.use(express.json());
 const { initializeDatabase } = require("./db/db.connect");
 
 const Tag = require("./models/model.tags");
