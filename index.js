@@ -4,13 +4,10 @@ const cors = require("cors");
 const app = express();
 
 const corsOptions = {
-  origin: [
-    "https://lead-flow-by-anvaya.vercel.app",
-    "http://localhost:3000"
-  ],
+  origin: ["https://lead-flow-by-anvaya.vercel.app", "http://localhost:3000"],
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
 
 app.use(cors(corsOptions));
@@ -48,10 +45,13 @@ app.post("/agents", async (req, res) => {
 
 //for get agents details
 app.get("/agents", async (req, res) => {
+  console.log("👉 GET /agents endpoint hit");
   try {
     const agents = await SalesAgent.find();
+    console.log("✅ Agents fetched successfully:", agents.length);
     res.status(200).json(agents);
   } catch (error) {
+    console.error("❌ Error in /agents:", error);
     res.status(500).json({ error: "failed to fetch agents" });
   }
 });
@@ -131,18 +131,23 @@ app.post("/leads", async (req, res) => {
 
 //for get leads
 app.get("/leads", async (req, res) => {
+  console.log("👉 GET /leads endpoint hit");
   try {
     const { status, salesAgent, priority } = req.query;
+    console.log("📩 Query params received:", { status, salesAgent, priority });
 
     // Build dynamic query
     const query = {};
     if (status) query.status = status;
     if (salesAgent) query.salesAgent = salesAgent;
     if (priority) query.priority = priority;
+    console.log("🔍 MongoDB query object:", query);
 
     const leads = await Lead.find(query).populate("salesAgent", "name");
+    console.log("✅ Leads fetched:", leads.length);
     res.status(200).json(leads);
   } catch (error) {
+    console.error("❌ Error in /leads:", error);
     res.status(500).json({ error: "Error getting leads." });
   }
 });
