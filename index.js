@@ -2,11 +2,20 @@ const express = require("express");
 
 const app = express();
 
+// const cors = require("cors");
+// const corsOptions = {
+//   origin: "*",
+//   credentials: true,
+//   optionsSuccessStatus: 200,
+// };
+
+// app.use(cors(corsOptions));
+
 const cors = require("cors");
+
 const corsOptions = {
-  origin: "*",
+  origin: ["http://localhost:3000", "https://lead-flow-by-anvaya.vercel.app/"], 
   credentials: true,
-  optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
