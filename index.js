@@ -145,14 +145,6 @@ app.get("/leads", async (req, res) => {
     res.status(500).json({ error: "Error getting leads." });
   }
 });
-// app.get("/leads", async (req, res) => {
-//   try {
-//     const leads = await Lead.find().populate("salesAgent", "name");
-//     res.status(200).json(leads);
-//   } catch (error) {
-//     res.status(500).json({ error: "Error getting leads." });
-//   }
-// });
 
 //for update lead by id
 app.put("/leads/:id", async (req, res) => {
@@ -184,41 +176,6 @@ app.put("/leads/:id", async (req, res) => {
     res.status(500).json({ error: "Error updating lead." });
   }
 });
-// app.put("/leads/:id", async (req, res) => {
-//   try {
-//     const leadId = req.params.id;
-//     const updates = req.body;
-
-//     // Find the lead by ID
-//     const lead = await Lead.findById(leadId);
-
-//     if (!lead) {
-//       return res.status(404).json({ error: "Lead not found" });
-//     }
-
-//     // ✅ If the lead is being marked Closed (and it wasn't closed before)
-//     if (updates.status === "Closed" && lead.status !== "Closed") {
-//       lead.closedAt = new Date(); // Set the closedAt timestamp
-//     }
-
-//     // ✅ If lead is already closed, prevent changing closedAt by mistake
-//     if (lead.status === "Closed") {
-//       delete updates.closedAt;
-//     }
-
-//     // Apply all other updates
-//     Object.assign(lead, updates);
-
-//     // Save the updated lead
-//     const savedLead = await lead.save();
-
-//     // Send the updated lead back
-//     res.status(200).json(savedLead);
-//   } catch (error) {
-//     console.log("Error updating lead:", error);
-//     res.status(500).json({ error: "Error updating lead." });
-//   }
-// });
 
 //for deleting lead by id
 app.delete("/leads/:id", async (req, res) => {
@@ -257,82 +214,30 @@ app.get("/report/pipeline", async (req, res) => {
 
 //for get closed leads from 7 days ago by sales agent
 
-// app.get("/report/last-week", async (req, res) => {
-//   try {
-//     const now = new Date();
-//     const sevenDaysAgo = new Date();
-//     sevenDaysAgo.setDate(now.getDate() - 7);
-
-//     const closedLeads = await Lead.find({ status: "Closed" }).populate(
-//       "salesAgent",
-//       "name"
-//     );
-
-//     const recentClosedLeads = closedLeads.filter((lead) => {
-//       const closedTime = lead.closedAt || lead.updatedAt;
-//       return closedTime >= sevenDaysAgo && closedTime <= now;
-//     });
-
-//     const leadCountByAgent = {};
-//     recentClosedLeads.forEach((lead) => {
-//       const agentName = lead.salesAgent?.name;
-//       if (!agentName) return;
-
-//       if (!leadCountByAgent[agentName]) {
-//         leadCountByAgent[agentName] = 0;
-//       }
-//       leadCountByAgent[agentName]++;
-//     });
-
-//     const barData = Object.entries(leadCountByAgent).map(
-//       ([agentName, count]) => {
-//         return {
-//           salesAgent: agentName,
-//           closedLeads: count,
-//         };
-//       }
-//     );
-
-//     res.status(200).json(barData);
-//   } catch (error) {
-//     console.error("Error fetching last week's closed leads:", error);
-//     res
-//       .status(500)
-//       .json({ error: "Something went wrong. Please try again later." });
-//   }
-// });
-
 app.get("/report/last-week", async (req, res) => {
   try {
-    // Get today's date and date 7 days ago
     const today = new Date();
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(today.getDate() - 7);
 
-    // Find all leads that are Closed and were closed in the last 7 days
     const closedLeads = await Lead.find({
       status: "Closed",
       closedAt: { $gte: sevenDaysAgo, $lte: today },
-    }).populate("salesAgent", "name"); // Get the name of the sales agent
+    }).populate("salesAgent", "name");
 
-    // Create an object to count leads by sales agent
     const leadCount = {};
 
-    // Go through each closed lead
     closedLeads.forEach((lead) => {
       const agentName = lead.salesAgent?.name;
       if (!agentName) return;
 
-      // If this agent is already in the object, increase the count
       if (leadCount[agentName]) {
         leadCount[agentName]++;
       } else {
-        // Otherwise, start the count at 1
         leadCount[agentName] = 1;
       }
     });
 
-    // Convert the leadCount object into an array so we can send it as JSON
     const result = [];
     for (let agent in leadCount) {
       result.push({
@@ -341,7 +246,6 @@ app.get("/report/last-week", async (req, res) => {
       });
     }
 
-    // Send the final result
     res.status(200).json(result);
   } catch (error) {
     console.log("Error fetching last week's report:", error);
