@@ -160,39 +160,27 @@ app.put("/leads/:id", async (req, res) => {
     const leadId = req.params.id;
     const updates = req.body;
 
-    console.log("👉 Update request received for lead:", leadId);
-    console.log("🛠️ New data to update:", updates);
-
-    // Step 1: Find the lead in the database
     const lead = await Lead.findById(leadId);
 
-    // Step 2: If lead not found, send error response
     if (!lead) {
-      console.log("❌ Lead not found for ID:", leadId);
       return res.status(404).json({ error: "Lead not found" });
     }
 
-    // Step 3: Check if the lead is being marked as "Closed"
-    if (updates.status === "Closed") {
-      if (!lead.closedAt) {
-        lead.closedAt = new Date(); // set closedAt only if not already set
-        console.log("✅ Lead marked as Closed. Setting closedAt:", lead.closedAt);
-      } else {
-        console.log("ℹ️ Lead already has closedAt:", lead.closedAt);
-      }
+    // ✅ If status is being changed to Closed
+    if (updates.status === "Closed" && lead.status !== "Closed") {
+      lead.closedAt = new Date();
     }
 
-    // Step 4: Apply updates to the lead object
+    // ✅ Prevent overwriting closedAt if already closed
+    if (lead.status === "Closed" && updates.status !== "Closed") {
+      delete updates.closedAt;
+    }
+
     Object.assign(lead, updates);
-
-    // Step 5: Save the updated lead to the database
     const savedLead = await lead.save();
-    console.log("✅ Lead updated successfully:", savedLead);
-
-    // Step 6: Return the updated lead to the frontend
     res.status(200).json(savedLead);
   } catch (error) {
-    console.error("🔥 Error updating lead:", error.message);
+    console.error("Error updating lead:", error);
     res.status(500).json({ error: "Error updating lead." });
   }
 });
