@@ -40,5 +40,12 @@ const leadSchema = new mongoose.Schema({
   timestamps: true,
 });
 
+leadSchema.pre("save", function (next) {
+  if (this.status === "Closed" && !this.closedAt) {
+    this.closedAt = new Date();
+  }
+  next();
+});
+
 const Lead = mongoose.model("Lead", leadSchema);
 module.exports = Lead;
