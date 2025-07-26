@@ -160,7 +160,7 @@ app.put("/leads/:id", async (req, res) => {
 
     // ✅ If status is being changed to Closed
     if (updates.status === "Closed" && lead.status !== "Closed") {
-      lead.closedAt = new Date();
+      updates.closedAt = new Date();
     }
 
     // ✅ Prevent overwriting closedAt if already closed
