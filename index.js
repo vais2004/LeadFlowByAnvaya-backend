@@ -1,6 +1,5 @@
 const express = require("express");
 const cors = require("cors");
-
 const app = express();
 
 const corsOptions = {
@@ -12,7 +11,6 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 const { initializeDatabase } = require("./db/db.connect");
-
 const Tag = require("./models/model.tags");
 const Comment = require("./models/models.comments");
 const Lead = require("./models/models.leads");
@@ -24,13 +22,12 @@ app.get("/", (req, res) => {
   res.status(201).json({ message: "Anvaya backend server is Live..." });
 });
 
-//for adding new agent
+// for adding new agent
 app.post("/agents", async (req, res) => {
   try {
     const { name, email } = req.body;
     const newAgent = new SalesAgent({ name, email });
     const savedAgent = await newAgent.save();
-
     res.status(201).json({
       message: "Agent added successfully",
       agent: savedAgent,
@@ -41,32 +38,28 @@ app.post("/agents", async (req, res) => {
   }
 });
 
-//for get agents details
+// for get agents details
 app.get("/agents", async (req, res) => {
   try {
     const agents = await SalesAgent.find();
-
     res.status(200).json(agents);
   } catch (error) {
     res.status(500).json({ error: "failed to fetch agents" });
   }
 });
 
-//for adding comments by id
+// for adding comments by id
 app.post("/leads/:id/comments", async (req, res) => {
   try {
     const leadId = req.params.id;
-    const { commentText, author } = req.body; // 👈 author is a string
-
+    const { commentText, author } = req.body;
     const lead = await Lead.findById(leadId);
     if (!lead) return res.status(404).json({ error: "Lead not found" });
-
     const comment = new Comment({
       lead: leadId,
       author,
       commentText,
     });
-
     const savedComment = await comment.save();
     res.status(201).json(savedComment);
   } catch (error) {
@@ -74,11 +67,10 @@ app.post("/leads/:id/comments", async (req, res) => {
   }
 });
 
-//for gets comments
+// for gets comments
 app.get("/leads/:id/comments", async (req, res) => {
   try {
     const leadId = req.params.id;
-
     const comments = await Comment.find({ lead: leadId }).sort({
       createdAt: -1,
     });
@@ -88,11 +80,12 @@ app.get("/leads/:id/comments", async (req, res) => {
   }
 });
 
-//for create lead
+// for create lead
 app.post("/leads", async (req, res) => {
   try {
     const { name, source, salesAgent, status, tags, timeToClose, priority } =
       req.body;
+
     if (
       !name ||
       !source ||
@@ -127,31 +120,29 @@ app.post("/leads", async (req, res) => {
   }
 });
 
-//for get leads
+// for get leads
 app.get("/leads", async (req, res) => {
   try {
     const { status, salesAgent, priority, source } = req.query;
-
     const query = {};
+
     if (status) query.status = status;
     if (salesAgent) query.salesAgent = salesAgent;
     if (priority) query.priority = priority;
     if (source) query.source = source;
 
     const leads = await Lead.find(query).populate("salesAgent", "name");
-
     res.status(200).json(leads);
   } catch (error) {
     res.status(500).json({ error: "Error getting leads." });
   }
 });
 
-//for update lead by id
+// for update lead by id
 app.put("/leads/:id", async (req, res) => {
   try {
     const leadId = req.params.id;
     const updates = req.body;
-
     const lead = await Lead.findById(leadId);
 
     if (!lead) {
@@ -177,24 +168,21 @@ app.put("/leads/:id", async (req, res) => {
   }
 });
 
-//for deleting lead by id
+// for deleting lead by id
 app.delete("/leads/:id", async (req, res) => {
   try {
     const leadId = req.params.id;
-
     const deletedLead = await Lead.findByIdAndDelete(leadId);
-
     if (!deletedLead) {
       return res.status(404).json({ error: "Lead not found." });
     }
-
     res.status(200).json({ message: "Lead deleted successfully." });
   } catch {
     res.status(500).json({ error: "Error deleting lead." });
   }
 });
 
-//get report of leads in the pipeline and closed leads
+// get report of leads in the pipeline and closed leads
 app.get("/report/pipeline", async (req, res) => {
   try {
     const allLeads = await Lead.find();
@@ -212,8 +200,7 @@ app.get("/report/pipeline", async (req, res) => {
   }
 });
 
-//for get closed leads from 7 days ago by sales agent
-
+// for get closed leads from 7 days ago by sales agent
 app.get("/report/last-week", async (req, res) => {
   try {
     const today = new Date();
@@ -230,7 +217,6 @@ app.get("/report/last-week", async (req, res) => {
     closedLeads.forEach((lead) => {
       const agentName = lead.salesAgent?.name;
       if (!agentName) return;
-
       if (leadCount[agentName]) {
         leadCount[agentName]++;
       } else {
@@ -253,11 +239,10 @@ app.get("/report/last-week", async (req, res) => {
   }
 });
 
-//for get how many leads are in each status
+// for get how many leads are in each status
 app.get("/report/status-distribution", async (req, res) => {
   try {
     const leads = await Lead.find({}, { status: 1 });
-
     const statusCount = {};
 
     // count each status
@@ -272,8 +257,7 @@ app.get("/report/status-distribution", async (req, res) => {
 
     // convert the object into an array
     const data = [];
-    const statusList = Object.keys(statusCount); // just get the keys
-
+    const statusList = Object.keys(statusCount);
     statusList.forEach((status) => {
       data.push({
         label: status,
